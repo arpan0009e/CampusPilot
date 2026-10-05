@@ -1,17 +1,27 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
     # MongoDB configuration
-    MONGODB_URL: str
-    MONGODB_DATABASE: str = "campuspilot"
+    mongodb_url: str
+    database_name: str = "campuspilot"
 
     # Application configuration
-    APP_NAME: str = "CampusPilot"
-    DEBUG: bool = True
+    app_name: str = "CampusPilot"
+    debug: bool = True
+
+    # JWT configuration
+    jwt_secret: str
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",
         extra="ignore"
     )
