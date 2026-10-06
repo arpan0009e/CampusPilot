@@ -12,33 +12,24 @@ from pydantic import BaseModel, ConfigDict, Field
 # Core Note Models
 # ==========================================
 
-class NoteBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200, description="Title of the lecture or study note")
-    content: str = Field(..., min_length=1, description="Body content of the note (supports markdown)")
-    subject: Optional[str] = Field(default=None, description="Optional subject or category")
-    tags: List[str] = Field(default_factory=list, description="Categorization tags")
-
-
-class NoteCreate(NoteBase):
-    pass
+class NoteCreate(BaseModel):
+    topic: str
+    title: str
+    content: str
 
 
 class NoteUpdate(BaseModel):
+    topic: Optional[str] = None
     title: Optional[str] = None
     content: Optional[str] = None
-    subject: Optional[str] = None
-    tags: Optional[List[str]] = None
 
 
-class NoteResponse(NoteBase):
-    id: str = Field(..., description="Unique note identifier")
-    user_id: str = Field(..., description="Owner student identifier")
-    ai_summary: Optional[str] = Field(default=None, description="Cached AI-generated summary if available")
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
+class NoteResponse(BaseModel):
+    id: str
+    user_id: str
+    topic: str
+    title: str
+    content: str
 
 # ==========================================
 # AI-Related Note Schemas (AI Integration)
