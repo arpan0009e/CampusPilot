@@ -8,8 +8,9 @@ import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { PriorityList } from '../components/dashboard/PriorityList';
 import { UpcomingList } from '../components/dashboard/UpcomingList';
 import { AISuggestion } from '../components/dashboard/AISuggestion';
+import { AIPopupWidget } from '../components/dashboard/AIPopupWidget';
 import { Loading } from '../components/common/Loading';
-import { CheckSquare, BookOpen, Bell, Sparkles, Plus } from 'lucide-react';
+import { CheckSquare, BookOpen, Bell, Sparkles, Plus, X } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
   const [reminders, setReminders] = useState([]);
+  const [isChatPopupOpen, setIsChatPopupOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,9 +56,6 @@ export const Dashboard = () => {
           <button className="btn btn-primary btn-sm" onClick={() => navigate('/tasks')}>
             <Plus size={14} /> Add Task
           </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/chat')}>
-            <Sparkles size={14} /> Ask AI
-          </button>
         </div>
       </div>
 
@@ -78,6 +77,39 @@ export const Dashboard = () => {
         <PriorityList tasks={highPriorityTasks} />
         <UpcomingList reminders={reminders} />
       </div>
+
+      {/* Floating Circular Ask AI Popup Button on Right Side */}
+      <button
+        onClick={() => setIsChatPopupOpen(prev => !prev)}
+        className="floating-ai-btn"
+        title={isChatPopupOpen ? "Close Assistant" : "Ask CampusPilot AI"}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2.5rem',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+          color: '#ffffff',
+          border: 'none',
+          boxShadow: '0 6px 20px rgba(2, 132, 199, 0.45)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          zIndex: 90,
+          transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }}
+      >
+        {isChatPopupOpen ? <X size={24} /> : <Sparkles size={24} />}
+      </button>
+
+      {/* Quick AI Chat Popup Widget */}
+      <AIPopupWidget 
+        isOpen={isChatPopupOpen} 
+        onClose={() => setIsChatPopupOpen(false)} 
+      />
     </div>
   );
 };
