@@ -1,4 +1,12 @@
 pydantic-settings
+<<<<<<< HEAD
+fastapi
+uvicorn
+pydantic
+pydantic[email]
+motor
+python-dotenv
+=======
 email-validator
 bcrypt
 python-jose
@@ -11,3 +19,5 @@ motor>=3.3.0
 google-genai>=2.25.0
 python-dotenv>=1.0.0
 python-multipart>=0.0.9
+>>>>>>> cea19960b15393e1075f0699f2804311c5f116b1
+
