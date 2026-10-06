@@ -15,7 +15,7 @@ class Task(BaseModel):
     status: str = "pending"
     priority: str = "medium"
     due_date: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    # created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         populate_by_name = True
