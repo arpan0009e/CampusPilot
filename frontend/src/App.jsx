@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -10,6 +10,7 @@ import { Tasks } from './pages/Tasks';
 import { Notes } from './pages/Notes';
 import { Reminders } from './pages/Reminders';
 import { Chat } from './pages/Chat';
+import { ProfileModal } from './components/profile/ProfileModal';
 
 import { 
   GraduationCap, 
@@ -23,6 +24,7 @@ import {
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <div className="app-container">
@@ -52,16 +54,63 @@ const Layout = ({ children }) => {
           </NavLink>
           <NavLink to="/chat" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <MessageSquare size={20} />
-            <span>AI Assistant</span>
+            <span>CampusPilot Assistance</span>
           </NavLink>
         </nav>
 
         {/* User Info & Logout */}
         <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-          <div className="user-info" style={{ marginBottom: '0.75rem', padding: '0 0.5rem' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.name}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.email}</div>
+          <div 
+            onClick={() => setIsProfileOpen(true)}
+            title="Click to view and edit profile"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.65rem', 
+              padding: '0.5rem', 
+              borderRadius: 'var(--radius-sm)', 
+              cursor: 'pointer', 
+              marginBottom: '0.5rem',
+              transition: 'background 0.15s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            {user?.avatar ? (
+              <img 
+                src={user.avatar} 
+                alt={user?.name || 'Student'} 
+                style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid #0284c7' }} 
+              />
+            ) : (
+              <div 
+                style={{ 
+                  width: '38px', 
+                  height: '38px', 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #e0f2fe, #bae6fd)', 
+                  color: '#0284c7', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontWeight: 700, 
+                  fontSize: '0.95rem',
+                  flexShrink: 0
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+              </div>
+            )}
+            <div style={{ overflow: 'hidden', flex: 1 }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: '#0f172a' }}>
+                {user?.name || 'Student'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                {user?.email || 'student@university.edu'}
+              </div>
+            </div>
           </div>
+
           <button 
             onClick={logout} 
             className="nav-item" 
@@ -72,6 +121,12 @@ const Layout = ({ children }) => {
           </button>
         </div>
       </aside>
+
+      {/* Profile Edit Modal */}
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+      />
 
       {/* Main Page Area */}
       <main className="main-content">
