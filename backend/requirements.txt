@@ -1,3 +1,5 @@
 pydantic-settings
+email-validator
 bcrypt
 python-jose
+motor
