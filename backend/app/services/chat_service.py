@@ -13,15 +13,15 @@ from typing import Any, Dict, List, Optional
 from google import genai
 from google.genai import types
 
-from app.config import settings
-from app.schemas.chat import (
+from backend.app.config import settings
+from backend.app.schemas.chat import (
     AcademicDoubtRequest,
     AcademicDoubtResponse,
     ChatMessage,
     ChatRequest,
     ChatResponse,
 )
-from app.schemas.note import (
+from backend.app.schemas.note import (
     NoteAIFlashcardsRequest,
     NoteAIFlashcardsResponse,
     NoteAIQuizRequest,
@@ -31,7 +31,7 @@ from app.schemas.note import (
     QuizQuestion,
     StudyFlashcard,
 )
-from app.schemas.task import (
+from backend.app.schemas.task import (
     SubtaskSuggestion,
     TaskAIBreakdownRequest,
     TaskAIBreakdownResponse,
@@ -60,8 +60,8 @@ class ChatService:
     """Service encapsulating all Gemini AI capabilities for CampusPilot."""
 
     def __init__(self):
-        self.api_key = settings.GEMINI_API_KEY
-        self.model_name = settings.GEMINI_MODEL or "gemini-3.8-flash"
+        self.api_key = settings.gemini_api_key
+        self.model_name = settings.gemini_model
         self._client: Optional[genai.Client] = None
 
     def _get_client(self) -> Optional[genai.Client]:
@@ -146,11 +146,38 @@ class ChatService:
 
         except Exception as e:
             logger.error(f"Error in Gemini chat: {e}", exc_info=True)
+
+            error_message = str(e)
+
+            if "503" in error_message or "UNAVAILABLE" in error_message:
+                response_message = (
+                    "CampusPilot AI is temporarily unavailable because the Gemini "
+                    "service is experiencing high demand. Please try again shortly."
+                )
+            elif "429" in error_message or "RESOURCE_EXHAUSTED" in error_message:
+                response_message = (
+                    "CampusPilot AI has temporarily reached its Gemini usage limit. "
+                    "Please try again later."
+                )
+            elif "401" in error_message or "403" in error_message or "API_KEY_INVALID" in error_message:
+                response_message = (
+                    "CampusPilot AI is not properly configured. "
+                    "Please check the Gemini API configuration."
+                )
+            else:
+                response_message = (
+                    "CampusPilot AI encountered a temporary problem while "
+                    "processing your request. Please try again."
+                )
+
             return ChatResponse(
-                response=f"CampusPilot AI temporarily encountered an issue: {str(e)}. Please check your API key configuration.",
+                response=response_message,
                 session_id=request.session_id,
                 timestamp=datetime.utcnow(),
-                suggested_followups=["How do I manage my study schedule?", "Can you explain database indexing?"],
+                suggested_followups=[
+                    "How do I manage my study schedule?",
+                    "Can you explain database indexing?",
+                ],
             )
 
     # =========================================================================
@@ -461,9 +488,37 @@ Return strictly valid JSON:
                 recommended_study_steps=data.get("recommended_study_steps", []),
             )
         except Exception as e:
-            logger.error(f"Error answering academic doubt: {e}")
+            logger.error(f"Error answering academic doubt: {e}", exc_info=True)
+
+            error_message = str(e)
+
+            if "503" in error_message or "UNAVAILABLE" in error_message:
+                explanation = (
+                    "CampusPilot AI is temporarily unavailable because the Gemini "
+                    "service is experiencing high demand. Please try again shortly."
+                )
+            elif "429" in error_message or "RESOURCE_EXHAUSTED" in error_message:
+                explanation = (
+                    "CampusPilot AI has temporarily reached its Gemini usage limit. "
+                    "Please try again later."
+                )
+            elif (
+                "401" in error_message
+                or "403" in error_message
+                or "API_KEY_INVALID" in error_message
+            ):
+                explanation = (
+                    "CampusPilot AI is not properly configured. "
+                    "Please check the Gemini API configuration."
+                )
+            else:
+                explanation = (
+                    "CampusPilot AI encountered a temporary problem while "
+                    "processing your academic doubt. Please try again."
+                )
+
             return AcademicDoubtResponse(
-                explanation=f"Unable to query Gemini API: {str(e)}",
+                explanation=explanation,
                 key_concepts=[],
                 examples=[],
                 recommended_study_steps=[],
@@ -580,42 +635,119 @@ Return strictly valid JSON:
             suggested_title=request.title or "Consolidated Study Notes",
         )
 
-    def _mock_flashcards(self, request: NoteAIFlashcardsRequest) -> NoteAIFlashcardsResponse:
+    def _mock_flashcards(
+        self,
+        request: NoteAIFlashcardsRequest,
+    ) -> NoteAIFlashcardsResponse:
+        """Fallback flashcards when Gemini is unavailable."""
+
+        flashcard_templates = [
+            (
+                "What is the primary objective of this topic?",
+                "To understand the core principles and apply them correctly.",
+                "Core Objective",
+            ),
+            (
+                "What are the key concepts to remember?",
+                "Focus on the main definitions, relationships, and workflows.",
+                "Key Concepts",
+            ),
+            (
+                "What is a common practical application?",
+                "Apply the concept to a realistic problem or academic example.",
+                "Application",
+            ),
+            (
+                "What is an important trade-off?",
+                "Different approaches may balance time, space, complexity, or accuracy.",
+                "Trade-offs",
+            ),
+            (
+                "What is a common mistake to avoid?",
+                "Avoid memorizing steps without understanding the underlying concept.",
+                "Common Mistake",
+            ),
+        ]
+
+        cards = []
+
+        for index in range(request.card_count):
+            template = flashcard_templates[index % len(flashcard_templates)]
+
+            cards.append(
+                StudyFlashcard(
+                    id=index + 1,
+                    front_question=template[0],
+                    back_answer=template[1],
+                    concept=template[2],
+                )
+            )
+
         return NoteAIFlashcardsResponse(
-            note_topic="Study Review",
-            flashcards=[
-                StudyFlashcard(
-                    id=1,
-                    front_question="What is the primary objective of this topic?",
-                    back_answer="To optimize efficiency and ensure correct conceptual execution.",
-                    concept="Core Objective",
-                ),
-                StudyFlashcard(
-                    id=2,
-                    front_question="What are the key trade-offs to keep in mind?",
-                    back_answer="Time complexity vs space/resource constraints.",
-                    concept="Trade-offs",
-                ),
-            ],
+            note_topic=request.focus_topic or "Study Review",
+            flashcards=cards,
         )
 
-    def _mock_quiz(self, request: NoteAIQuizRequest) -> NoteAIQuizResponse:
+    def _mock_quiz(
+        self,
+        request: NoteAIQuizRequest,
+    ) -> NoteAIQuizResponse:
+        """Fallback quiz when Gemini is unavailable."""
+
+        quiz_templates = [
+            (
+                "Which approach is generally best for learning a new topic?",
+                [
+                    "Passive re-reading",
+                    "Active recall and practice",
+                    "Cramming at the last minute",
+                    "Skipping foundational concepts",
+                ],
+                1,
+                "Active recall and practice improve understanding and retention.",
+            ),
+            (
+                "What should you identify first when studying a concept?",
+                [
+                    "The core definition",
+                    "Only advanced examples",
+                    "The final exam answer",
+                    "Unrelated topics",
+                ],
+                0,
+                "Understanding the core definition provides a foundation for deeper learning.",
+            ),
+            (
+                "Which strategy helps reinforce learning over time?",
+                [
+                    "Avoiding revision",
+                    "Studying only once",
+                    "Spaced repetition",
+                    "Ignoring mistakes",
+                ],
+                2,
+                "Spaced repetition reinforces information across multiple study sessions.",
+            ),
+        ]
+
+        questions = []
+
+        for index in range(request.question_count):
+            template = quiz_templates[index % len(quiz_templates)]
+
+            questions.append(
+                QuizQuestion(
+                    id=index + 1,
+                    question=template[0],
+                    options=template[1],
+                    correct_option_index=template[2],
+                    explanation=template[3],
+                )
+            )
+
         return NoteAIQuizResponse(
             note_topic="Quick Self-Test",
-            questions=[
-                QuizQuestion(
-                    id=1,
-                    question="Which approach is considered best practice when preparing for this topic?",
-                    options=[
-                        "Passive re-reading of slides",
-                        "Active recall and milestone-based practice",
-                        "Cramming the night before",
-                        "Skipping foundational theory",
-                    ],
-                    correct_option_index=1,
-                    explanation="Active recall and milestone-based practice yield the highest retention and understanding.",
-                )
-            ],
+            questions=questions,
         )
 
     def _extract_or_generate_followups(self, user_msg: str, assistant_reply: str) -> List[str]:

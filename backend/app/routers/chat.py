@@ -4,15 +4,19 @@ Author: Ankita (AI Integration)
 FastAPI Router for Gemini AI integration in CampusPilot
 """
 
-from fastapi import APIRouter, HTTPException, status
-from app.config import settings
-from app.schemas.chat import (
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from backend.app.models.user import User
+from backend.app.services.auth_dependency import get_current_user
+from backend.app.config import settings
+
+from backend.app.schemas.chat import (
     AcademicDoubtRequest,
     AcademicDoubtResponse,
     ChatRequest,
     ChatResponse,
 )
-from app.schemas.note import (
+from backend.app.schemas.note import (
     NoteAIFlashcardsRequest,
     NoteAIFlashcardsResponse,
     NoteAIQuizRequest,
@@ -20,13 +24,13 @@ from app.schemas.note import (
     NoteAISummarizeRequest,
     NoteAISummarizeResponse,
 )
-from app.schemas.task import (
+from backend.app.schemas.task import (
     TaskAIBreakdownRequest,
     TaskAIBreakdownResponse,
     TaskAISuggestionRequest,
     TaskAISuggestionResponse,
 )
-from app.services.chat_service import chat_service
+from backend.app.services.chat_service import chat_service
 
 router = APIRouter(
     prefix="/chat",
@@ -40,7 +44,10 @@ router = APIRouter(
     summary="Send a message to CampusPilot AI Academic Assistant",
     description="Student asks an academic question, study advice, or task assistance with multi-turn conversation support.",
 )
-async def send_chat_message(request: ChatRequest):
+async def send_chat_message(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+):
     """
     Interact with the CampusPilot AI assistant.
     Accepts student prompt, prior conversation turns, and optional student context.
@@ -61,7 +68,9 @@ async def send_chat_message(request: ChatRequest):
     summary="AI Task Breakdown & Priority Suggestions",
     description="Analyzes assignment/task details, computes estimated completion time, breaks into subtasks, and suggests priority.",
 )
-async def get_task_suggestions(request: TaskAISuggestionRequest):
+async def get_task_suggestions(request: TaskAISuggestionRequest,
+                               current_user: User = Depends(get_current_user),
+                               ):
     """
     Get AI-generated suggestions, priority recommendations, and subtask milestones for a study task.
     """
@@ -81,7 +90,9 @@ async def get_task_suggestions(request: TaskAISuggestionRequest):
     summary="Quick Task Milestone Breakdown",
     description="Generates a quick step-by-step Pomodoro-friendly milestone plan for an assignment.",
 )
-async def quick_task_breakdown(request: TaskAIBreakdownRequest):
+async def quick_task_breakdown(request: TaskAIBreakdownRequest,
+                               current_user: User = Depends(get_current_user),
+                               ):
     """
     Quick milestone breakdown for an assignment or project.
     """
@@ -101,7 +112,9 @@ async def quick_task_breakdown(request: TaskAIBreakdownRequest):
     summary="AI Note Summarization & Exam Highlights",
     description="Analyzes lecture/study note content to produce a concise summary, key takeaways, and high-yield exam points.",
 )
-async def summarize_note(request: NoteAISummarizeRequest):
+async def summarize_note(request: NoteAISummarizeRequest,
+                         current_user: User = Depends(get_current_user),
+                         ):
     """
     Summarize student lecture notes with key points, high-yield exam topics, and tags.
     """
@@ -121,7 +134,9 @@ async def summarize_note(request: NoteAISummarizeRequest):
     summary="Generate Study Flashcards",
     description="Extracts active recall flashcards with questions and answers from study note content.",
 )
-async def generate_flashcards(request: NoteAIFlashcardsRequest):
+async def generate_flashcards(request: NoteAIFlashcardsRequest,
+                              current_user: User = Depends(get_current_user),
+                              ):
     """
     Generate study flashcards from notes for exam revision.
     """
@@ -141,7 +156,9 @@ async def generate_flashcards(request: NoteAIFlashcardsRequest):
     summary="Generate Self-Assessment Quiz",
     description="Generates multiple-choice quiz questions with answer keys and explanations from notes.",
 )
-async def generate_quiz(request: NoteAIQuizRequest):
+async def generate_quiz(request: NoteAIQuizRequest,
+                        current_user: User = Depends(get_current_user),
+                        ):
     """
     Generate a multiple-choice practice quiz from study notes.
     """
@@ -161,7 +178,9 @@ async def generate_quiz(request: NoteAIQuizRequest):
     summary="Ask Academic Concept Doubt",
     description="Specialized tutor answering detailed coursework doubts with analogies and study steps.",
 )
-async def clarify_academic_doubt(request: AcademicDoubtRequest):
+async def clarify_academic_doubt(request: AcademicDoubtRequest,
+                                 current_user: User = Depends(get_current_user),
+                                 ):
     """
     Clarify an academic concept or doubt.
     """

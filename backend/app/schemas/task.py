@@ -49,10 +49,6 @@ class TaskBase(BaseModel):
         default=TaskStatus.PENDING,
         description="Current progress status",
     )
-    subject: Optional[str] = Field(
-        default=None,
-        description="Associated academic subject",
-    )
 
 
 class TaskCreate(TaskBase):
@@ -65,14 +61,10 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
     status: Optional[TaskStatus] = None
-    subject: Optional[str] = None
-
 
 class TaskResponse(TaskBase):
     id: str = Field(..., description="Unique task identifier")
     user_id: str = Field(..., description="Owner student identifier")
-    created_at: datetime
-    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
