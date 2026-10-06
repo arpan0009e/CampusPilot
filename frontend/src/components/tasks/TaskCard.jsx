@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Circle, Trash2, Calendar } from 'lucide-react';
+import { CheckSquare, Square, Trash2, Calendar } from 'lucide-react';
 
 export const TaskCard = ({ task, onToggleStatus, onDelete }) => {
   const isDone = task.status === 'Completed';
@@ -11,25 +11,27 @@ export const TaskCard = ({ task, onToggleStatus, onDelete }) => {
           onClick={() => onToggleStatus(task)} 
           style={{ background: 'none', border: 'none', color: isDone ? '#10b981' : '#64748b', cursor: 'pointer', marginTop: '0.15rem' }}
         >
-          {isDone ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+          {isDone ? <CheckSquare size={20} /> : <Square size={20} />}
         </button>
         <div>
-          <div style={{ fontWeight: 600, fontSize: '0.95rem', textDecoration: isDone ? 'line-through' : 'none' }}>
-            {task.title}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.95rem', textDecoration: isDone ? 'line-through' : 'none' }}>
+              {task.title}
+            </span>
+            {task.priority && (
+              <span className={`badge badge-${task.priority.toLowerCase()}`}>{task.priority}</span>
+            )}
           </div>
           {task.description && (
             <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.25rem' }}>
               {task.description}
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <span className={`badge badge-${task.priority.toLowerCase()}`}>{task.priority}</span>
-            {task.dueDate && (
-              <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Calendar size={12} /> {task.dueDate}
-              </span>
-            )}
-          </div>
+          {task.dueDate && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.45rem', fontSize: '0.75rem', color: '#64748b' }}>
+              <Calendar size={12} /> {task.dueDate}
+            </div>
+          )}
         </div>
       </div>
       <button 
