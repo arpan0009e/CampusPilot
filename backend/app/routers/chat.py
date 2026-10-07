@@ -5,10 +5,8 @@ FastAPI Router for Gemini AI integration in CampusPilot
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-
 from backend.app.models.user import User
 from backend.app.services.auth_dependency import get_current_user
-from backend.app.config import settings
 
 from backend.app.schemas.chat import (
     AcademicDoubtRequest,
@@ -55,10 +53,10 @@ async def send_chat_message(
     try:
         response = await chat_service.generate_chat_response(request)
         return response
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate AI response: {str(e)}",
+            detail=f"Failed to generate AI response. Please try again.",
         )
 
 
@@ -77,10 +75,10 @@ async def get_task_suggestions(request: TaskAISuggestionRequest,
     try:
         suggestions = await chat_service.suggest_task_breakdown(request)
         return suggestions
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate task suggestions: {str(e)}",
+            detail=f"Failed to generate task suggestions. Please try again.",
         )
 
 
@@ -99,10 +97,10 @@ async def quick_task_breakdown(request: TaskAIBreakdownRequest,
     try:
         breakdown = await chat_service.quick_task_breakdown(request)
         return breakdown
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate task breakdown: {str(e)}",
+            detail=f"Failed to generate task breakdown. Please try again.",
         )
 
 
@@ -121,10 +119,10 @@ async def summarize_note(request: NoteAISummarizeRequest,
     try:
         summary_res = await chat_service.summarize_note(request)
         return summary_res
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to summarize notes: {str(e)}",
+            detail=f"Failed to summarize notes. Please try again.",
         )
 
 
@@ -143,10 +141,10 @@ async def generate_flashcards(request: NoteAIFlashcardsRequest,
     try:
         flashcards = await chat_service.generate_flashcards(request)
         return flashcards
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate flashcards: {str(e)}",
+            detail=f"Failed to generate flashcards. Please try again.",
         )
 
 
@@ -165,10 +163,10 @@ async def generate_quiz(request: NoteAIQuizRequest,
     try:
         quiz = await chat_service.generate_quiz(request)
         return quiz
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate quiz: {str(e)}",
+            detail=f"Failed to generate quiz. Please try again.",
         )
 
 
@@ -187,10 +185,10 @@ async def clarify_academic_doubt(request: AcademicDoubtRequest,
     try:
         answer = await chat_service.answer_academic_doubt(request)
         return answer
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to answer academic doubt: {str(e)}",
+            detail=f"Failed to answer academic doubt. Please try again.",
         )
 
 
