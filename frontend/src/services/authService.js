@@ -5,20 +5,20 @@ export const authService = {
   login: async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password });
-      if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
+      if (res.data.access_token) {
+        localStorage.setItem('token', res.data.access_token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
       }
       return res.data;
     } catch (err) {
       // Demo Fallback if backend is not running yet
-      if (email && password) {
-        const mockUser = { id: 'demo-123', name: email.split('@')[0], email };
-        const mockToken = 'mock-jwt-token-123';
-        localStorage.setItem('token', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { user: mockUser, token: mockToken };
-      }
+      // if (email && password) {
+      //   const mockUser = { id: 'demo-123', name: email.split('@')[0], email };
+      //   const mockToken = 'mock-jwt-token-123';
+      //   localStorage.setItem('token', mockToken);
+      //   localStorage.setItem('user', JSON.stringify(mockUser));
+      //   return { user: mockUser, token: mockToken };
+      // }
       throw err.response?.data?.message || 'Login failed';
     }
   },
