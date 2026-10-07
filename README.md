@@ -1,521 +1,1006 @@
-# CampusPilot --- Developer GitHub & Development Guide
+# CampusPilot
 
-> **Core rule:** Everyone works on their own branch. Developers create
-> Pull Requests. **Only Arpan merges into `main`.**
+CampusPilot is a student productivity and academic assistance platform designed to bring essential academic activities into one application.
 
-## 1. Team Responsibilities
+The current demo/MVP focuses on authentication and user management, task and assignment management, notes, reminders, dashboard functionality, and basic AI-powered academic assistance.
 
-  -----------------------------------------------------------------------
-  Developer               Branch                  Primary Responsibility
-  ----------------------- ----------------------- -----------------------
-  Arpan                   `arpan-dev`             Database, models,
-                                                  deployment, repository
-                                                  management
+The project follows a separated frontend, backend, and database architecture so each part can be developed and maintained independently.
 
-  Ankita                  `ankita-dev`            AI integration, chat,
-                                                  AI-related schemas
+---
 
-  Soumyadip               `soumyadip-dev`         Backend, Auth,
-                                                  `main.py`
+## Table of Contents
 
-  Frontend Developer      `frontend-dev`          Frontend
-  -----------------------------------------------------------------------
+- [Project Overview](#project-overview)
+- [Current Demo Features](#current-demo-features)
+- [Phase 2 Features](#phase-2-features)
+- [System Architecture](#system-architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Team Members and Responsibilities](#team-members-and-responsibilities)
+- [Database Structure](#database-structure)
+- [Authentication](#authentication)
+- [API Structure](#api-structure)
+- [Environment Configuration](#environment-configuration)
+- [Local Development Setup](#local-development-setup)
+- [Docker](#docker)
+- [Git and GitHub Workflow](#git-and-github-workflow)
+- [Security Rules](#security-rules)
+- [Project Status](#project-status)
 
-### Overall Workflow
+---
 
-``` text
-DEVELOPER BRANCH
-      ↓
-Create / edit assigned files
-      ↓
-Test locally
-      ↓
-git add → git commit → git push
-      ↓
-Pull Request → main
-      ↓
-Arpan reviews
-      ↓
-Arpan merges
-      ↓
-main
-      ↓
-Everyone updates their branch
+# Project Overview
+
+Students often manage assignments, notes, reminders, and academic information using multiple applications.
+
+CampusPilot aims to provide a centralized platform where students can:
+
+- Manage academic tasks
+- Track deadlines and completion
+- Create and manage notes
+- Create and view reminders
+- Maintain basic student information
+- Access basic AI-powered academic assistance
+- Access their own user-specific data securely
+
+The project is being developed in phases. The current implementation is focused on a practical demo/MVP before expanding into more advanced academic-management features.
+
+---
+
+# Current Demo Features
+
+## 1. Authentication and User Management
+
+The current demo supports:
+
+- Register
+- Login
+- Logout
+- JWT authentication
+- Basic student profile
+- Protected routes
+- User-specific data
+
+### User Fields
+
+```text
+id
+name
+email
+department
+semester
+enrollment_id
+hashed_password
+is_active
 ```
 
-------------------------------------------------------------------------
+---
 
-## 2. Repository Structure
+## 2. Dashboard
 
-Arpan prepares the agreed project skeleton first. Developers then work
-inside the structure instead of inventing duplicate folders.
+The dashboard provides a central location for the student's productivity information and quick access to the application's main features.
 
-``` text
+---
+
+## 3. Task and Assignment Management
+
+The current demo supports:
+
+- Create task
+- View tasks
+- Edit task
+- Delete task
+- Mark task as completed
+- Priority
+- Due date
+- Description
+- Task status
+- Basic filtering
+
+### Task Fields
+
+```text
+id
+user_id
+title
+description
+priority
+due_date
+status
+```
+
+---
+
+## 4. Notes
+
+The current demo supports:
+
+- Create note
+- View notes
+- Edit note
+- Delete note
+- Note title
+- Note content
+- Optional subject/category
+
+### Note Fields
+
+```text
+id
+user_id
+topic / category
+title
+content
+```
+
+---
+
+## 5. Reminders
+
+The current demo supports:
+
+- Create reminder
+- Reminder title
+- Date and time
+- View upcoming reminders
+- Delete reminder
+
+### Reminder Fields
+
+```text
+id
+user_id
+title
+description
+reminder_time
+is_completed
+```
+
+---
+
+## 6. AI Academic Assistant
+
+The current project includes basic AI-powered academic assistance.
+
+More advanced AI agents, AI tool calling, and other advanced AI capabilities are planned for Phase 2.
+
+---
+
+# Phase 2 Features
+
+The following features are planned for Phase 2:
+
+- Subject management
+- Syllabus tracking
+- Examination management
+- Advanced planner
+- Advanced AI agents
+- AI tool calling
+- Complex notification system
+- Advanced analytics
+- More sophisticated personalization
+
+These features are intentionally outside the current demo/MVP scope.
+
+---
+
+# System Architecture
+
+```text
+                         CampusPilot
+                              |
+              +---------------+---------------+
+              |               |               |
+              v               v               v
+          Frontend         Backend         Database
+           React           FastAPI          MongoDB
+                              |
+                              v
+                         AI Services
+```
+
+### Data Flow
+
+```text
+React Frontend
+      |
+      | HTTP / JSON
+      v
+FastAPI Backend
+      |
+      | Motor
+      v
+MongoDB
+```
+
+The frontend does not connect directly to MongoDB. All database access is handled by the backend.
+
+---
+
+# Technology Stack
+
+| Technology | Purpose |
+|------------|---------|
+| React | Frontend application |
+| Vite | Frontend development/build tooling |
+| FastAPI | Backend REST API |
+| Pydantic | Data validation and models |
+| Pydantic Settings | Environment-based configuration |
+| Motor | Asynchronous MongoDB driver |
+| MongoDB | NoSQL database |
+| MongoDB Atlas | Cloud database hosting |
+| JWT | Authentication |
+| bcrypt | Password hashing |
+| Google Gemini | AI academic assistance |
+| Axios | Frontend API communication |
+| GitHub | Version control and collaboration |
+| Docker | Application containerization |
+| Render | Backend deployment |
+| Vercel | Frontend deployment |
+
+---
+
+# Project Structure
+
+```text
 CampusPilot/
+|
 ├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   └── services/
+│   ├── package.json
+│   └── vite.config.js
+│
 ├── backend/
-│   └── app/
-│       ├── main.py
-│       ├── core/
-│       ├── db/
-│       │   └── models/
-│       ├── api/
-│       │   └── routes/
-│       ├── services/
-│       └── schemas/
-├── tests/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   │
+│   │   ├── database/
+│   │   │   └── connection.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── user.py
+│   │   │   ├── task.py
+│   │   │   ├── note.py
+│   │   │   └── reminder.py
+│   │   │
+│   │   ├── routers/
+│   │   │   ├── auth.py
+│   │   │   ├── tasks.py
+│   │   │   ├── notes.py
+│   │   │   ├── reminders.py
+│   │   │   └── chat.py
+│   │   │
+│   │   ├── schemas/
+│   │   └── services/
+│   │
+│   ├── Dockerfile
+│   └── requirements.txt
+│
+├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
-├── README.md
-└── requirements.txt
+└── README.md
 ```
 
-### Repository Rule
+---
 
-If a file already exists and belongs to you, edit it.
+# Team Members and Responsibilities
 
-If an agreed file does not exist yet, the responsible developer creates
-it.
+CampusPilot is developed collaboratively with separate responsibilities.
 
-**Do not create duplicate files or folders.**
+| Member | Branch | Primary Responsibility |
+|--------|--------|------------------------|
+| **Arpan** | `arpan-dev` | Database, models, deployment, repository management |
+| **Ankita** | `ankita-dev` | AI integration, chat, AI-related schemas |
+| **Soumyadip** | `soumyadip-dev` | Backend, authentication, API/application integration |
+| **Frontend Developer** | `frontend-dev` | React frontend and frontend integration |
 
-### Branch Ownership
+---
 
-  Person               Branch
-  -------------------- -----------------
-  Arpan                `arpan-dev`
-  Ankita               `ankita-dev`
-  Soumyadip            `soumyadip-dev`
-  Frontend Developer   `frontend-dev`
+## Arpan — Database and Deployment
 
-------------------------------------------------------------------------
-
-## 3. Arpan --- Database & Deployment
+Arpan is responsible for the database and project infrastructure.
 
 ### Responsibilities
 
-  ------------------------------------------------------------------------------
-  Area                    Arpan Creates / Maintains      Purpose
-  ----------------------- ------------------------------ -----------------------
-  Database                `backend/app/db/database.py`   Database connection and
-                                                         setup
+- MongoDB connection
+- Database configuration
+- Database models
+- User model
+- Task model
+- Note model
+- Reminder model
+- Environment configuration
+- Docker configuration
+- Deployment configuration
+- Repository configuration
+- `.gitignore`
+- `.env.example`
+- Project structure management
 
-  Models                  `backend/app/db/models/`       Database model
-                                                         definitions
+### Main Files
 
-  Deployment              Deployment configuration       Run and deploy the
-                          agreed by the team             application
+```text
+backend/app/config.py
 
-  Repository              `README.md`, `.gitignore`,     Keep the shared project
-                          `.env.example`, branch/ruleset organized
-                          setup                          
-  ------------------------------------------------------------------------------
+backend/app/database/
+└── connection.py
 
-### Arpan Workflow
-
-``` bash
-git switch arpan-dev
-git pull origin main
-
-# create/edit assigned files
-
-git status
-git add <files>
-git commit -m "Describe the change"
-git push origin arpan-dev
+backend/app/models/
+├── user.py
+├── task.py
+├── note.py
+└── reminder.py
 ```
 
-**Arpan is the only developer who merges Pull Requests into `main`.**
+---
 
-### Database Model Example
+## Ankita — AI Integration
 
-``` text
-backend/
-└── app/
-    └── db/
-        ├── database.py
-        └── models/
-            ├── user.py
-            ├── task.py
-            └── note.py
-```
-
-Ankita may create some AI-related schema parts, such as
-task/note-related schemas, when those parts are part of her AI
-integration responsibility. Coordinate when a change crosses ownership.
-
-------------------------------------------------------------------------
-
-## 4. Ankita --- AI Integration
+Ankita is responsible for AI-related functionality.
 
 ### Responsibilities
 
-  --------------------------------------------------------------------------------
-  Area                    Ankita Creates / Maintains       Purpose
-  ----------------------- -------------------------------- -----------------------
-  Chat                    `backend/app/services/chat.py`   AI chat integration
-                          and agreed chat files            
+- AI academic assistant
+- AI chat functionality
+- AI integration
+- AI-related services
+- AI-related schemas
+- Integration of AI features with the backend
 
-  AI Integration          AI-related service/integration   Connect CampusPilot to
-                          files                            the AI layer
+---
 
-  Schemas                 AI-related task/note schema      Represent AI-facing
-                          parts when needed                data
-  --------------------------------------------------------------------------------
+## Soumyadip — Backend and Authentication
 
-### Example
-
-``` text
-backend/
-└── app/
-    └── services/
-        └── chat.py
-```
-
-### Ankita Workflow
-
-``` bash
-git switch ankita-dev
-git pull origin main
-
-# create/edit assigned files
-
-git status
-git add <files>
-git commit -m "Implement AI chat service"
-git push origin ankita-dev
-```
-
-After pushing, Ankita creates a Pull Request:
-
-``` text
-ankita-dev → main
-```
-
-**She does not merge it.**
-
-------------------------------------------------------------------------
-
-## 5. Soumyadip --- Backend & Auth
+Soumyadip is responsible for backend application logic and authentication.
 
 ### Responsibilities
 
-  ----------------------------------------------------------------------------------
-  Area                    Soumyadip Creates / Maintains      Purpose
-  ----------------------- ---------------------------------- -----------------------
-  Backend                 `backend/app/api/` and backend     Application/API logic
-                          services assigned to backend       
+- FastAPI backend
+- REST API development
+- Authentication
+- JWT authorization
+- Backend integration
+- Application entry point
+- API routers
+- Backend services
+- Integration with database models and schemas
 
-  Auth                    `backend/app/api/routes/auth.py`   Authentication and
-                          and assigned auth files            authorization
+### Main Area
 
-  Main                    `backend/app/main.py`              Application entry point
-
-  Integration             Backend integration with other     Connect application
-                          modules                            components
-  ----------------------------------------------------------------------------------
-
-### Example Files
-
-``` text
-backend/app/main.py
-backend/app/core/security.py
-backend/app/api/routes/auth.py
+```text
+backend/app/
+├── main.py
+├── routers/
+├── schemas/
+└── services/
 ```
 
-### Soumyadip Workflow
+---
 
-``` bash
-git switch soumyadip-dev
-git pull origin main
+## Frontend Developer
 
-# create/edit assigned files
-
-git status
-git add <files>
-git commit -m "Implement authentication"
-git push origin soumyadip-dev
-```
-
-**Soumyadip does not push directly to `main` and does not merge his own
-PR.**
-
-------------------------------------------------------------------------
-
-## 6. Frontend Developer
+The frontend developer is responsible for the React application and frontend integration.
 
 ### Responsibilities
 
-  -----------------------------------------------------------------------
-  Area                    Frontend Developer      Purpose
-                          Creates / Maintains     
-  ----------------------- ----------------------- -----------------------
-  Frontend                `frontend/`             User interface
+- React application
+- Pages
+- Components
+- Routing
+- Authentication UI
+- Dashboard UI
+- Tasks UI
+- Notes UI
+- Reminders UI
+- AI assistant UI
+- API integration
 
-  Components              Inside the agreed       Reusable UI pieces
-                          frontend structure      
+### Main Area
 
-  Pages                   Inside the agreed       Application screens
-                          frontend structure      
-
-  Frontend Integration    Assigned API/client     Connect UI to backend
-                          files                   
-  -----------------------------------------------------------------------
-
-### Frontend Workflow
-
-``` bash
-git switch frontend-dev
-git pull origin main
-
-# create/edit assigned frontend files
-
-git status
-git add <files>
-git commit -m "Implement dashboard UI"
-git push origin frontend-dev
+```text
+frontend/src/
+├── components/
+├── context/
+├── pages/
+├── routes/
+└── services/
 ```
 
-Frontend work stays on `frontend-dev` until the Pull Request is reviewed
-and merged by Arpan.
+---
 
-------------------------------------------------------------------------
+# Database Structure
 
-## 7. Common Daily Workflow
+CampusPilot uses MongoDB as the primary database.
 
-### Before Coding
+The current Phase 1 database uses four main collections:
 
-First update your local `main`:
+```text
+campuspilot
+|
+├── users
+├── tasks
+├── notes
+└── reminders
+```
 
-``` bash
+## Users Collection
+
+```text
+users
+|
+├── _id
+├── name
+├── email
+├── department
+├── semester
+├── enrollment_id
+├── hashed_password
+└── is_active
+```
+
+## Tasks Collection
+
+```text
+tasks
+|
+├── _id
+├── user_id
+├── title
+├── description
+├── priority
+├── due_date
+└── status
+```
+
+## Notes Collection
+
+```text
+notes
+|
+├── _id
+├── user_id
+├── topic / category
+├── title
+└── content
+```
+
+## Reminders Collection
+
+```text
+reminders
+|
+├── _id
+├── user_id
+├── title
+├── description
+├── reminder_time
+└── is_completed
+```
+
+Each user's tasks, notes, and reminders are associated through `user_id`.
+
+---
+
+# Authentication
+
+CampusPilot uses JWT-based authentication.
+
+## Authentication Flow
+
+```text
+User
+ |
+ +---- Register
+ |        |
+ |        v
+ |     FastAPI
+ |        |
+ |        +---- Validate input
+ |        +---- Hash password
+ |        +---- Store user
+ |
+ +---- Login
+          |
+          v
+       FastAPI
+          |
+          +---- Find user by email
+          +---- Verify password
+          +---- Create JWT
+          |
+          v
+       Frontend
+          |
+          v
+   Protected API Request
+          |
+          | Authorization: Bearer <JWT>
+          v
+       FastAPI
+          |
+          +---- Validate token
+          +---- Identify current user
+          |
+          v
+       MongoDB
+```
+
+Passwords must never be stored as plain text. The database stores the `hashed_password` value.
+
+---
+
+# API Structure
+
+The backend provides the following main API areas.
+
+## Authentication
+
+```text
+POST /auth/register
+POST /auth/login
+GET  /auth/me
+```
+
+## Tasks
+
+```text
+POST   /tasks
+GET    /tasks
+GET    /tasks/{task_id}
+PUT    /tasks/{task_id}
+DELETE /tasks/{task_id}
+```
+
+## Notes
+
+```text
+POST   /notes
+GET    /notes
+GET    /notes/{note_id}
+PUT    /notes/{note_id}
+DELETE /notes/{note_id}
+```
+
+## Reminders
+
+```text
+POST   /reminders
+GET    /reminders
+GET    /reminders/{reminder_id}
+PUT    /reminders/{reminder_id}
+DELETE /reminders/{reminder_id}
+```
+
+---
+
+# Environment Configuration
+
+Environment files are used for local configuration and secrets.
+
+## Backend `.env`
+
+Create:
+
+```text
+backend/.env
+```
+
+Example:
+
+```env
+MONGODB_URL=mongodb://localhost:27017
+DATABASE_NAME=campuspilot
+
+APP_NAME=CampusPilot
+DEBUG=True
+
+JWT_SECRET=your_secret_key_here
+
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.8-flash
+```
+
+Do not commit the real `.env` file.
+
+## `.env.example`
+
+Commit a template containing variable names but no real secrets:
+
+```env
+MONGODB_URL=mongodb://localhost:27017
+DATABASE_NAME=campuspilot
+
+APP_NAME=CampusPilot
+DEBUG=True
+
+JWT_SECRET=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.8-flash
+```
+
+## Frontend Environment
+
+The frontend uses:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Keep real local environment files outside Git tracking.
+
+---
+
+# Local Development Setup
+
+## Prerequisites
+
+Install:
+
+- Python 3.11 or compatible version
+- Node.js
+- npm
+- MongoDB
+- Git
+
+---
+
+## Clone Repository
+
+```bash
+git clone <repository-url>
+cd CampusPilot
+```
+
+---
+
+# Backend Setup
+
+Go to the backend:
+
+```bash
+cd backend
+```
+
+Create a virtual environment.
+
+### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create:
+
+```text
+backend/.env
+```
+
+and add the required environment variables.
+
+---
+
+# Start Backend
+
+From the project root:
+
+```bash
+uvicorn backend.app.main:app --reload
+```
+
+Backend:
+
+```text
+http://localhost:8000
+```
+
+---
+
+# Frontend Setup
+
+Open another terminal:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start development server:
+
+```bash
+npm run dev
+```
+
+Frontend:
+
+```text
+http://localhost:5173
+```
+
+---
+
+# Docker
+
+Docker is used for containerized application setup.
+
+## Backend Dockerfile
+
+Located at:
+
+```text
+backend/Dockerfile
+```
+
+The Dockerfile:
+
+- Uses a Python base image
+- Installs backend dependencies
+- Copies backend code
+- Exposes port 8000
+- Starts the FastAPI application
+
+## Docker Compose
+
+Located at:
+
+```text
+docker-compose.yml
+```
+
+The Compose file is kept at the project root so that it can coordinate multiple services as the project grows.
+
+The current deployment plan uses MongoDB/MongoDB Atlas rather than requiring a MongoDB container in the application itself.
+
+---
+
+# Git and GitHub Workflow
+
+Each developer works on a separate branch.
+
+```text
+main
+|
+├── arpan-dev
+├── ankita-dev
+├── soumyadip-dev
+└── frontend-dev
+```
+
+## Before Coding
+
+Update local `main`:
+
+```bash
 git switch main
 git pull origin main
 ```
 
-Then switch to your development branch:
+Switch back to your development branch:
 
-``` bash
+```bash
 git switch <your-branch>
 ```
 
-For example:
+Merge the latest `main`:
 
-``` bash
-git switch ankita-dev
-```
-
-Merge the latest `main` into your working branch:
-
-``` bash
+```bash
 git merge main
 ```
 
-This brings the latest `main` changes into your working branch.
+---
 
-### Create or Edit Files
-
-Check the existing structure first.
-
--   Edit an existing file if it already exists.
--   Create a new file only when it belongs to your responsibility.
--   Do not create duplicate files or folders.
-
-### Before Pushing
+## Commit and Push
 
 Check your changes:
 
-``` bash
+```bash
 git status
 ```
 
-### Commit and Push
+Stage changes:
 
-``` bash
+```bash
 git add <files>
-git commit -m "Short description of change"
+```
+
+Commit:
+
+```bash
+git commit -m "Describe the change"
+```
+
+Push:
+
+```bash
 git push origin <your-branch>
 ```
 
-------------------------------------------------------------------------
+---
 
-## 8. Pull Request Workflow
+# Pull Request Workflow
 
-### Developer
+Developers create Pull Requests from their own branch to `main`.
 
-``` text
-Your branch
-    ↓
-git push origin <your-branch>
-    ↓
-GitHub → Pull requests → New pull request
-    ↓
-base: main
-compare: your branch
+```text
+Developer Branch
+       |
+       v
+   git push
+       |
+       v
+ Pull Request
+       |
+       v
+   Code Review
+       |
+       v
+      main
 ```
 
-When creating the Pull Request:
+Pull Requests should include:
 
-1.  Write a short title.
-2.  Explain what changed.
-3.  Explain how it was tested.
+- A clear title
+- A short description
+- Testing information
+- Any relevant implementation notes
 
-### Arpan Review
+The project uses Pull Requests for integrating changes into `main`.
 
-``` text
-Arpan receives PR
-      ↓
-Review files
-      ↓
-Review code
-      ↓
-Check tests
-      ↓
-Check security
-      ↓
-Approve OR request changes
-      ↓
-Merge when ready
+---
+
+# Security Rules
+
+Never commit:
+
+```text
+.env
+API keys
+JWT secrets
+Database passwords
+Private keys
+Credentials
 ```
 
-**Only Arpan merges into `main`.**
+Use `.env.example` for example configuration.
 
-### If Changes Are Requested
+Never store plain-text passwords in MongoDB.
 
-Stay on the same branch and fix the requested code:
+Protected endpoints must verify the authenticated user before accessing user-specific data.
 
-``` bash
-git switch <your-branch>
+---
 
-# fix the requested code
+# Development Ownership
 
-git add <files>
-git commit -m "Address review comments"
-git push origin <your-branch>
+```text
+Arpan
+|
++-- Database
++-- Models
++-- Deployment
++-- Repository configuration
+
+Ankita
+|
++-- AI integration
++-- Chat
++-- AI-related schemas
+
+Soumyadip
+|
++-- Backend
++-- Authentication
++-- API integration
+
+Frontend Developer
+|
++-- React frontend
++-- UI
++-- Frontend integration
 ```
 
-The existing Pull Request updates automatically.
+When a change crosses responsibility boundaries, the relevant developers should coordinate before modifying the file.
 
-**Do not create a second PR for the same work.**
+---
 
-------------------------------------------------------------------------
+# Project Status
 
-## 9. GitHub Rules for `main`
+## Phase 1 / Demo
 
-The CampusPilot ruleset protects the `main` branch and targets:
-
-``` text
-refs/heads/main
+```text
+Authentication             ✅
+User Management            ✅
+Dashboard                  ✅
+Task Management            ✅
+Notes                      ✅
+Reminders                  ✅
+Basic AI Assistance        ✅
 ```
 
-### Configured Rules
+## Phase 2
 
-  Rule                      Configured Behavior
-  ------------------------- ---------------------------------------
-  Pull Request              Required before merging
-  Approvals                 1 required
-  Stale Approval            Dismissed when new commits are pushed
-  Conversation Resolution   Required
-  Force Push                Blocked
-  Deletion                  Blocked
-  Bypass                    Arpan is the configured bypass actor
-
-### Recommended Team Behavior
-
-Even though Arpan has bypass permission, use the Pull Request workflow
-for normal changes so the project stays consistent.
-
-### Do Not
-
--   Do not push normal development directly to `main`.
--   Do not force-push `main`.
--   Do not create duplicate backend folders.
--   Do not commit `.env` files or secrets.
--   Do not modify another owner's files without coordination.
--   Do not merge your own Pull Request.
-
-------------------------------------------------------------------------
-
-## 10. After Arpan Merges
-
-A merge changes GitHub `main`, but it does **not** automatically update
-every developer's local branch.
-
-Update your local branch as follows:
-
-``` bash
-git switch main
-git pull origin main
-
-git switch <your-branch>
-git merge main
+```text
+Subject Management         ⏳
+Syllabus Tracking          ⏳
+Examination Management     ⏳
+Advanced Planner           ⏳
+Advanced AI Agents         ⏳
+AI Tool Calling             ⏳
+Complex Notifications      ⏳
+Advanced Analytics         ⏳
+Advanced Personalization   ⏳
 ```
 
-### Example: Soumyadip Updates After Ankita's PR Is Merged
+---
 
-``` bash
-git switch main
-git pull origin main
+# Deployment
 
-git switch soumyadip-dev
-git merge main
+The planned deployment stack is:
+
+```text
+Frontend  → Vercel
+Backend   → Render
+Database  → MongoDB Atlas
+Source    → GitHub
 ```
 
-Now Soumyadip has the latest integrated code and can continue his work.
+The production configuration may evolve as deployment work progresses.
 
-------------------------------------------------------------------------
+---
 
-## 11. Quick Command Sheet
+# Future Development
 
-  Command                      Purpose
-  ---------------------------- -------------------------------
-  `git status`                 See branch and changed files
-  `git branch`                 See local branches
-  `git switch <branch>`        Switch branches
-  `git fetch origin`           Refresh remote information
-  `git pull origin main`       Get latest `main`
-  `git merge main`             Bring `main` into your branch
-  `git add <files>`            Stage files
-  `git commit -m "message"`    Create a commit
-  `git push origin <branch>`   Push your branch
+The long-term goal is to expand CampusPilot from the current productivity-focused MVP into a broader academic management platform.
 
-------------------------------------------------------------------------
+Future expansion can include:
 
-## Quick Team Checklist
+- Subject management
+- Syllabus progress tracking
+- Examination management
+- Advanced academic planning
+- Advanced AI agents
+- AI tool calling
+- Notifications
+- Analytics
+- Personalization
 
-### Before coding
+---
 
--   [ ] Switch to `main`
--   [ ] Pull the latest `main`
--   [ ] Switch to your assigned branch
--   [ ] Merge `main` into your branch
--   [ ] Check the existing project structure
+# Project Goal
 
-### While coding
+CampusPilot aims to provide students with a centralized academic productivity platform where they can manage tasks, notes, reminders, profile information, and academic assistance from one place.
 
--   [ ] Work only on assigned files/areas
--   [ ] Avoid duplicate folders/files
--   [ ] Coordinate before changing another owner's files
--   [ ] Never commit secrets or `.env` files
+The project starts with a focused MVP and is designed to scale into a more complete academic management platform over subsequent phases.
 
-### Before pushing
+---
 
--   [ ] Run/test the changes locally
--   [ ] Run `git status`
--   [ ] Stage the required files
--   [ ] Create a clear commit message
--   [ ] Push to your own branch
+# License
 
-### Pull Request
-
--   [ ] Create PR from your branch to `main`
--   [ ] Describe what changed
--   [ ] Describe how it was tested
--   [ ] Wait for review
--   [ ] Address review comments on the same branch
--   [ ] Do not merge your own PR
-
-### After a merge
-
--   [ ] Pull the latest `main`
--   [ ] Merge `main` into your development branch
--   [ ] Continue development from the updated branch
+CampusPilot is currently developed as a collaborative academic project.
