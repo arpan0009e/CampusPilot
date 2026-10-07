@@ -1,83 +1,156 @@
-import api from './api';
+import api from './api.js';
 
 export const authService = {
-  // Login user
+  /**
+   * Register a new student account
+   * @param {Object} userData - { name, email, password, department, semester, enrollment_id }
+   */
+  register: async (userData) => {
+    const payload = {
+      name: userData.name.trim(),
+      email: userData.email.trim().toLowerCase(),
+      password: userData.password,
+      department: userData.department.trim(),
+      semester: userData.semester ? String(userData.semester).trim() : null,
+      enrollment_id: userData.enrollment_id ? parseInt(userData.enrollment_id, 10) : null,
+    };
+
+    try {
+      const data = await api.post('/auth/register', payload);
+      return data;
+    } catch (err) {
+      // Offline fallback for preview if backend is down
+      if (err.isNetworkError) {
+        const mockUser = {
+          id: 'demo-user-' + Date.now(),
+          name: payload.name,
+          email: payload.email,
+          department: payload.department,
+          semester: payload.semester,
+          enrollment_id: payload.enrollment_id,
+          is_active: true,
+        };
+        return mockUser;
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Authenticate student and retrieve access token & profile
+   * @param {string} email 
+   * @param {string} password 
+   */
   login: async (email, password) => {
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      if (res.data.access_token) {
-        localStorage.setItem('token', res.data.access_token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-      }
-      return res.data;
-    } catch (err) {
-      // Demo Fallback if backend is not running yet
-      // if (email && password) {
-      //   const mockUser = { id: 'demo-123', name: email.split('@')[0], email };
-      //   const mockToken = 'mock-jwt-token-123';
-      //   localStorage.setItem('token', mockToken);
-      //   localStorage.setItem('user', JSON.stringify(mockUser));
-      //   return { user: mockUser, token: mockToken };
-      // }
-      throw err.response?.data?.message || 'Login failed';
-    }
-  },
+    const payload = {
+      email: email.trim().toLowerCase(),
+      password: password,
+    };
 
-  // Register user
-  register: async (name, email, password) => {
     try {
-      const res = await api.post('/auth/register', { name, email, password });
-      return res.data;
+      // 1. Get access token from backend
+      const res = await api.post('/auth/login', payload);
+      const token = res.access_token;
+      if (token) {
+        api.setToken(token);
+        
+        // 2. Fetch authenticated profile via /auth/me
+        try {
+          const profile = await api.get('/auth/me');
+          localStorage.setItem('cp_user', JSON.stringify(profile));
+          localStorage.setItem('user', JSON.stringify(profile));
+          window.dispatchEvent(new CustomEvent('campus:auth-change', { detail: { user: profile, token } }));
+          return { token, user: profile };
+        } catch {
+          // If me fails, construct minimal user
+          const minimalUser = {
+            id: 'current-user',
+            name: email.split('@')[0],
+            email: email,
+            department: 'Computer Science',
+            is_active: true,
+          };
+          localStorage.setItem('cp_user', JSON.stringify(minimalUser));
+          localStorage.setItem('user', JSON.stringify(minimalUser));
+          window.dispatchEvent(new CustomEvent('campus:auth-change', { detail: { user: minimalUser, token } }));
+          return { token, user: minimalUser };
+        }
+      }
+      throw new Error('No access token received from backend');
     } catch (err) {
-      // Demo Fallback
-      if (name && email) {
-        const mockUser = { id: 'demo-123', name, email };
-        const mockToken = 'mock-jwt-token-123';
-        localStorage.setItem('token', mockToken);
+      if (err.isNetworkError) {
+        // Fallback for offline demo testing
+        const mockToken = 'offline-demo-jwt-' + Date.now();
+        const mockUser = {
+          id: 'demo-student-1',
+          name: email.split('@')[0] || 'Demo Student',
+          email: email,
+          department: 'Computer Science & Engineering',
+          semester: '6th Semester',
+          enrollment_id: 20261001,
+          is_active: true,
+        };
+        api.setToken(mockToken);
+        localStorage.setItem('cp_user', JSON.stringify(mockUser));
         localStorage.setItem('user', JSON.stringify(mockUser));
-        return { user: mockUser, token: mockToken };
+        window.dispatchEvent(new CustomEvent('campus:auth-change', { detail: { user: mockUser, token: mockToken } }));
+        return { token: mockToken, user: mockUser, isOfflineMock: true };
       }
-      throw err.response?.data?.message || 'Registration failed';
+      throw err;
     }
   },
 
-  // Logout user
+  /**
+   * Fetch current user profile
+   */
+  getMe: async () => {
+    try {
+      const profile = await api.get('/auth/me');
+      localStorage.setItem('cp_user', JSON.stringify(profile));
+      localStorage.setItem('user', JSON.stringify(profile));
+      return profile;
+    } catch (err) {
+      const cached = authService.getCurrentUser();
+      if (cached) return cached;
+      throw err;
+    }
+  },
+
+  /**
+   * Log out student
+   */
   logout: () => {
-    localStorage.removeItem('token');
+    api.setToken(null);
+    localStorage.removeItem('cp_user');
     localStorage.removeItem('user');
+    window.dispatchEvent(new CustomEvent('campus:auth-change', { detail: { user: null, token: null } }));
   },
 
-  // Get stored user
+  /**
+   * Synchronously get logged in student from localStorage
+   */
   getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const data = localStorage.getItem('cp_user') || localStorage.getItem('user');
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
   },
 
-  // Update user profile
-  updateProfile: async (updatedData) => {
-    try {
-      const res = await api.put('/auth/profile', updatedData);
-      if (res.data?.user) {
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        return res.data.user;
-      }
-    } catch {
-      // Offline / fallback support
-    }
-    const current = authService.getCurrentUser() || {};
-    const updated = { ...current, ...updatedData };
-    localStorage.setItem('user', JSON.stringify(updated));
-    return updated;
+  /**
+   * Get current auth token
+   */
+  getToken: () => {
+    return api.getToken();
   },
 
-  // Change password
-  changePassword: async (currentPassword, newPassword) => {
-    try {
-      const res = await api.put('/auth/change-password', { currentPassword, newPassword });
-      return res.data;
-    } catch {
-      // Demo / fallback support
-      return { success: true, message: 'Password updated successfully' };
-    }
-  }
+  /**
+   * Check if user is logged in
+   */
+  isAuthenticated: () => {
+    return Boolean(api.getToken());
+  },
 };
+
+export default authService;

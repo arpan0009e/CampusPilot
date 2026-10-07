@@ -2,12 +2,552 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>campus-pilot-frt-project</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>CampusPilot — AI-Powered Academic Assistant & Task Hub</title>
+    <!-- Modern Typography: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <!-- Top Progress Bar / Global Loader -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 1. PUBLIC AUTH SHELL (Login & Register) -->
+    <div id="app-public-auth-shell" class="auth-wrapper" style="display: none;">
+      <div class="auth-bg-decorations">
+        <div class="auth-blob blob-1"></div>
+        <div class="auth-blob blob-2"></div>
+      </div>
+
+      <div class="auth-container">
+        <div class="auth-brand-header">
+          <div class="brand-logo-icon">🎓</div>
+          <h1 class="brand-title">CampusPilot</h1>
+          <p class="brand-tagline">AI-Powered Student Productivity & Academic Copilot</p>
+        </div>
+
+        <!-- LOGIN VIEW -->
+        <section id="view-login" class="app-page-view auth-card">
+          <div class="auth-card-header">
+            <h2>Welcome Back</h2>
+            <p>Sign in with your student credentials</p>
+          </div>
+
+          <div id="login-error-alert" class="alert alert-danger" style="display: none;"></div>
+
+          <form id="login-form" class="auth-form">
+            <div class="form-group">
+              <label for="login-email" class="form-label">Student Email <span class="text-danger">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  type="email"
+                  id="login-email"
+                  class="form-control"
+                  placeholder="student@campus.edu"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="login-password" class="form-label">Password <span class="text-danger">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  id="login-password"
+                  class="form-control"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block btn-lg">
+              Sign In to CampusPilot
+            </button>
+          </form>
+
+          <div class="auth-card-footer">
+            <p>Don't have an account? <a href="#register" class="auth-link">Create Account</a></p>
+          </div>
+        </section>
+
+        <!-- REGISTER VIEW -->
+        <section id="view-register" class="app-page-view auth-card">
+          <div class="auth-card-header">
+            <h2>Create Student Account</h2>
+            <p>Join CampusPilot to supercharge your academics</p>
+          </div>
+
+          <div id="register-error-alert" class="alert alert-danger" style="display: none;"></div>
+
+          <form id="register-form" class="auth-form">
+            <div class="form-group">
+              <label for="reg-name" class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" id="reg-name" class="form-control" placeholder="Arpan Sharma" required />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-email" class="form-label">Email Address <span class="text-danger">*</span></label>
+              <input type="email" id="reg-email" class="form-control" placeholder="arpan@campus.edu" required />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="reg-department" class="form-label">Department <span class="text-danger">*</span></label>
+                <input type="text" id="reg-department" class="form-control" placeholder="Computer Science" required />
+              </div>
+
+              <div class="form-group">
+                <label for="reg-semester" class="form-label">Semester</label>
+                <input type="text" id="reg-semester" class="form-control" placeholder="6th Semester" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="reg-enrollment" class="form-label">Enrollment ID</label>
+              <input type="number" id="reg-enrollment" class="form-control" placeholder="20261001" />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-password" class="form-label">Password <span class="text-danger">*</span></label>
+              <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" required />
+            </div>
+
+            <button type="submit" id="register-submit-btn" class="btn btn-primary btn-block btn-lg">
+              Create Student Account
+            </button>
+          </form>
+
+          <div class="auth-card-footer">
+            <p>Already registered? <a href="#login" class="auth-link">Sign In</a></p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 2. AUTHENTICATED APP SHELL -->
+    <div id="app-authenticated-shell" class="app-layout" style="display: none;">
+      <!-- SIDEBAR NAVIGATION -->
+      <aside id="app-sidebar" class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-badge-icon">🎓</div>
+          <div class="brand-text">
+            <span class="brand-name">CampusPilot</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-link active">
+            <span class="nav-icon">📊</span>
+            <span class="nav-title">Dashboard</span>
+          </a>
+          <a href="#tasks" class="nav-link">
+            <span class="nav-icon">✅</span>
+            <span class="nav-title">Tasks</span>
+          </a>
+          <a href="#notes" class="nav-link">
+            <span class="nav-icon">📝</span>
+            <span class="nav-title">Study Notes</span>
+          </a>
+          <a href="#reminders" class="nav-link">
+            <span class="nav-icon">⏰</span>
+            <span class="nav-title">Reminders</span>
+          </a>
+          <a href="#chat" class="nav-link nav-link-ai">
+            <span class="nav-icon">💬</span>
+            <span class="nav-title">CampusPilot AI Assistance</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="user-profile-widget">
+            <div class="user-avatar" id="header-user-avatar">S</div>
+            <div class="user-info">
+              <span class="user-name" id="header-user-name">Student</span>
+              <span class="user-dept" id="header-user-dept">Computer Science</span>
+            </div>
+            <button id="btn-logout" class="btn-logout-icon" title="Sign Out" aria-label="Sign Out">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT VIEW AREA -->
+      <div class="main-content-wrapper">
+        <button id="mobile-menu-toggle" class="mobile-toggle-btn" aria-label="Toggle navigation">
+          ☰
+        </button>
+
+        <main class="page-content-container">
+          <!-- 1. DASHBOARD VIEW -->
+          <section id="view-dashboard" class="app-page-view active">
+            <div class="page-header-row">
+              <div>
+                <h1 class="page-title">
+                  Welcome back, <span id="dashboard-greeting-name">Student</span>
+                </h1>
+                <p class="page-subtitle" id="dashboard-greeting-dept">
+                  Your academic schedule, study notes, and AI recommendations
+                </p>
+              </div>
+              <div class="page-header-actions">
+                <a href="#tasks" class="btn btn-secondary btn-sm">+ New Task</a>
+                <a href="#notes" class="btn btn-primary btn-sm">+ Add Note</a>
+              </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="dashboard-body">
+              <!-- KPI Cards Row -->
+              <div id="dashboard-kpi-grid" class="kpi-cards-grid"></div>
+
+              <!-- Widgets Row (Priority Tasks & Upcoming Reminders) -->
+              <div id="dashboard-widgets-row" class="dashboard-widgets-grid"></div>
+            </div>
+          </section>
+
+          <!-- 2. TASKS VIEW -->
+          <section id="view-tasks" class="app-page-view">
+            <div class="page-header-row">
+              <div>
+                <h1 class="page-title">Academic Tasks & Assignments</h1>
+                <p class="page-subtitle">Track deadlines, milestones, and prioritize workload</p>
+              </div>
+              <div class="page-header-actions">
+                <button id="tasks-add-btn" class="btn btn-primary">
+                  <span>+ Add New Task</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-controls-bar">
+              <div class="filter-tabs-group">
+                <button class="filter-pill-btn task-filter-btn active" data-filter="all">All</button>
+                <button class="filter-pill-btn task-filter-btn" data-filter="pending">Pending</button>
+                <button class="filter-pill-btn task-filter-btn" data-filter="in_progress">In Progress</button>
+                <button class="filter-pill-btn task-filter-btn" data-filter="completed">Completed</button>
+                <button class="filter-pill-btn task-filter-btn" data-filter="high">High Priority</button>
+              </div>
+
+              <div class="filter-search-group">
+                <input
+                  type="text"
+                  id="tasks-search-input"
+                  class="search-input"
+                  placeholder="Search tasks..."
+                />
+                <span id="tasks-total-badge" class="badge badge-secondary badge-sm">0 tasks</span>
+              </div>
+            </div>
+
+            <div id="tasks-list-container" class="content-list-wrapper"></div>
+          </section>
+
+          <!-- 3. NOTES VIEW -->
+          <section id="view-notes" class="app-page-view">
+            <div class="page-header-row">
+              <div>
+                <h1 class="page-title">Study Notes & Lecture Summaries</h1>
+                <p class="page-subtitle">Organize course materials and generate AI flashcards & quizzes</p>
+              </div>
+              <div class="page-header-actions">
+                <button id="notes-add-btn" class="btn btn-primary">
+                  <span>+ Create Note</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="notes-controls-bar">
+              <div id="notes-topic-pills" class="topic-pills-row"></div>
+              <div class="filter-search-group">
+                <input
+                  type="text"
+                  id="notes-search-input"
+                  class="search-input"
+                  placeholder="Search topic, title, or content..."
+                />
+                <span id="notes-total-badge" class="badge badge-secondary badge-sm">0 notes</span>
+              </div>
+            </div>
+
+            <div id="notes-list-container" class="content-list-wrapper"></div>
+          </section>
+
+          <!-- 4. REMINDERS VIEW -->
+          <section id="view-reminders" class="app-page-view">
+            <div class="page-header-row">
+              <div>
+                <h1 class="page-title">Deadlines & Study Reminders</h1>
+                <p class="page-subtitle">Never miss assignment submissions, quiz dates, or group studies</p>
+              </div>
+              <div class="page-header-actions">
+                <button id="reminders-add-btn" class="btn btn-primary">
+                  <span>+ Add Reminder</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-controls-bar">
+              <div class="filter-tabs-group">
+                <button class="filter-pill-btn rem-filter-btn active" data-filter="all">All</button>
+                <button class="filter-pill-btn rem-filter-btn" data-filter="pending">Upcoming</button>
+                <button class="filter-pill-btn rem-filter-btn" data-filter="completed">Completed</button>
+              </div>
+
+              <div class="filter-search-group">
+                <input
+                  type="text"
+                  id="reminders-search-input"
+                  class="search-input"
+                  placeholder="Search reminders..."
+                />
+                <span id="reminders-total-badge" class="badge badge-secondary badge-sm">0 reminders</span>
+              </div>
+            </div>
+
+            <div id="reminders-list-container" class="content-list-wrapper"></div>
+          </section>
+
+          <!-- 5. AI CHAT VIEW -->
+          <section id="view-chat" class="app-page-view">
+            <div class="chat-page-header">
+              <div class="chat-header-info">
+                <div class="chat-header-avatar">💬</div>
+                <div>
+                  <h2 class="chat-header-title">CampusPilot AI Assistance</h2>
+                </div>
+              </div>
+
+              <div class="chat-header-actions">
+                <button id="chat-clear-btn" class="btn btn-ghost btn-sm" title="Clear conversation">
+                  🗑️ Clear Chat
+                </button>
+              </div>
+            </div>
+
+            <div class="chat-interface-layout">
+              <div id="chat-messages-container" class="chat-messages-scroll-area"></div>
+
+              <div class="chat-bottom-input-bar">
+                <div class="chat-input-wrapper">
+                  <textarea
+                    id="chat-input-textarea"
+                    class="chat-textarea"
+                    placeholder="Ask an academic question or paste course notes..."
+                    rows="1"
+                  ></textarea>
+                  <button id="chat-send-btn" class="chat-send-btn" aria-label="Send message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODALS SECTION -->
+    <!-- ============================================== -->
+
+    <!-- Modal 1: Task Form Modal -->
+    <div id="modal-task" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-task-title" class="modal-title">Create New Task</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+
+        <form id="task-form" class="modal-form">
+          <div class="form-group">
+            <label for="task-input-title" class="form-label">Task Title <span class="text-danger">*</span></label>
+            <input type="text" id="task-input-title" class="form-control" placeholder="e.g. Complete Database Assignment 2" required />
+          </div>
+
+          <div class="form-group">
+            <label for="task-input-desc" class="form-label">Description / Scope</label>
+            <textarea id="task-input-desc" class="form-control" rows="3" placeholder="Details, rubric points, or lecture topic..."></textarea>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="task-input-priority" class="form-label">Priority</label>
+              <select id="task-input-priority" class="form-control">
+                <option value="low">Low Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="task-status-form-group">
+              <label for="task-input-status" class="form-label">Status</label>
+              <select id="task-input-status" class="form-control">
+                <option value="pending" selected>Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="task-input-duedate" class="form-label">Due Date</label>
+            <input type="date" id="task-input-duedate" class="form-control" />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
+            <button type="button" id="task-form-ai-help-btn" class="btn btn-ai btn-sm">
+              ✨ AI Breakdown
+            </button>
+            <button type="submit" id="task-form-submit-btn" class="btn btn-primary">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2: Note Form Modal -->
+    <div id="modal-note" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3 id="modal-note-title" class="modal-title">Create Study Note</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+
+        <form id="note-form" class="modal-form">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="note-input-topic" class="form-label">Subject / Topic <span class="text-danger">*</span></label>
+              <input type="text" id="note-input-topic" class="form-control" placeholder="e.g. Operating Systems" required />
+            </div>
+
+            <div class="form-group">
+              <label for="note-input-title" class="form-label">Note Title <span class="text-danger">*</span></label>
+              <input type="text" id="note-input-title" class="form-control" placeholder="e.g. CPU Scheduling Algorithms" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="note-input-content" class="form-label">Lecture Notes Content <span class="text-danger">*</span></label>
+            <textarea
+              id="note-input-content"
+              class="form-control font-mono"
+              rows="8"
+              placeholder="Type or paste lecture slides, textbook notes, or core concepts here..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
+            <button type="submit" id="note-form-submit-btn" class="btn btn-primary">Save Note</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 3: Reminder Form Modal -->
+    <div id="modal-reminder" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-rem-title" class="modal-title">Add Academic Reminder</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+
+        <form id="reminder-form" class="modal-form">
+          <div class="form-group">
+            <label for="rem-input-title" class="form-label">Reminder Title <span class="text-danger">*</span></label>
+            <input type="text" id="rem-input-title" class="form-control" placeholder="e.g. Submit DBMS Lab Report" required />
+          </div>
+
+          <div class="form-group">
+            <label for="rem-input-desc" class="form-label">Notes / Instructions</label>
+            <textarea id="rem-input-desc" class="form-control" rows="2" placeholder="Submission portal link or room number..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="rem-input-time" class="form-label">Date & Time <span class="text-danger">*</span></label>
+            <input type="datetime-local" id="rem-input-time" class="form-control" required />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
+            <button type="submit" id="rem-form-submit-btn" class="btn btn-primary">Save Reminder</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 4: AI Task Breakdown Modal -->
+    <div id="modal-ai-breakdown" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3 class="modal-title">✨ AI Milestone Decomposition</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="ai-breakdown-modal-content">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 5: AI Note Summary Modal -->
+    <div id="modal-note-summary" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3 class="modal-title">✨ AI Note Summary & Exam Highlights</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="note-summary-content">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 6: AI Spaced Repetition Flashcards Modal -->
+    <div id="modal-note-flashcards" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3 class="modal-title">🗂️ Active Recall Flashcards</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="note-flashcards-content">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 7: AI Practice Quiz Modal -->
+    <div id="modal-note-quiz" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3 class="modal-title">❓ Practice Quiz & Self-Assessment</h3>
+          <button class="modal-close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="note-quiz-content">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Round AI Popup Button -->
+    <button id="fab-ai-assistance" class="fab-ai-btn" aria-label="CampusPilot AI Assistance" title="CampusPilot AI Assistance">
+      <span class="fab-ai-icon">💬</span>
+      <span class="fab-ai-tooltip">CampusPilot AI Assistance</span>
+    </button>
+
+    <!-- Global App Bootstrapper -->
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
